@@ -26,13 +26,8 @@ public class App {
         sparkConf.set("spark.storage.blockManagerSlaveTimeoutMs", "100001s");
         sparkConf.set("spark.executor.heartbeatInterval", "100000s");
         JavaSparkContext ctx = new JavaSparkContext(sparkConf);
-//        ctx.setLogLevel("ERROR");
         SparkSession sparkSession = SparkSession.builder()
                 .config(sparkConf).getOrCreate();
-
-//        JavaRDD<String> nodesF = ctx.textFile("C:\\Users\\artur\\Downloads\\example_index");
-//        JavaRDD<String> edgesF = ctx.textFile("C:\\Users\\artur\\Downloads\\example_arcs");
-//        JavaRDD<Vertice> verticesRDD = nodesF.map((str) -> new Vertice(Long.parseLong(str.split("\t")[1]), str.split("\t")[0]));
 
         JavaRDD<String> f = ctx.textFile("C:\\Users\\artur\\Downloads\\web-Stanford.txt\\web-Stanford.txt");
         JavaRDD<Vertice> verticesRDD = f.flatMap((str) -> Arrays.asList(str.split("\t")).iterator()).distinct().map((str)->new Vertice(Long.parseLong(str), str));
@@ -41,8 +36,6 @@ public class App {
         Dataset<Row> edges = sparkSession.createDataFrame(edgesRDD, Edge.class);
 
 
-        //Dataset<Row> vertices = sparkSession.read().format("csv").option("header", true).option("delimiter", ";").csv("D:\\Workspace\\projetos\\Unit\\BigData\\dataset\\definicao_tec.csv");
-        //Dataset<Row> edges = sparkSession.read().format("csv").option("header", true).option("delimiter", ";").csv("D:\\Workspace\\projetos\\Unit\\BigData\\dataset\\conecao_tec.csv");
         GraphFrame graphFrame = new GraphFrame(vertices, edges);
         long start = System.currentTimeMillis();
         GraphFrame pageRank = graphFrame.pageRank().maxIter(10).run();
@@ -63,25 +56,6 @@ public class App {
 
         v.subList(0, 10).forEach((o) -> System.out.println(o.get(0) +"\t"+ o.get(1)+"\t"+o.get(2)));
         System.out.println((end - start) / 1000 + "s");
-        /*
-        List<Vertice> users = new ArrayList<>();
-        users.add(new Vertice(1L, "site1"));
-        users.add(new Vertice(2L, "site2"));
-        users.add(new Vertice(3L, "site3"));
-
-        List<Edge> relationships = new ArrayList<>();
-        relationships.add(new Edge("1", "2", 2));
-        relationships.add(new Edge("2", "3", 5));
-
-        Dataset<Row> verDF = sparkSession.createDataFrame(users, Vertice.class);
-        Dataset<Row> edgDF = sparkSession.createDataFrame(relationships, Edge.class);
-
-        GraphFrame graphFrame = new GraphFrame(verDF, edgDF);
-        graphFrame.inDegrees().show();
-        GraphFrame paths = graphFrame.pageRank().maxIter(10).run();
-        paths.vertices().show();
-        paths.edges().show();
-        */
 
 
     }
